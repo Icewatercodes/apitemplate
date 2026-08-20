@@ -42,8 +42,10 @@ func main() {
 }
 
 func gethttp(c *gin.Context) {
-	url := c.Query("url")
-	path := c.Query("path")
+	url := c.Param("url")
+	path := c.Param("path")
+
+	fmt.Print(fmt.Sprintf("\nhttp://%v/%v\n", url, path))
 
 	resp, err := http.Get(fmt.Sprintf("http://%v/%v", url, path))
 	if err != nil {
