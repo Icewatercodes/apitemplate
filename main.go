@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -37,43 +36,22 @@ func main() {
 
 	fmt.Print(config)
 	router := gin.Default()
-	router.GET("/albums", getAlbums)
-	router.GET("/albums/:id", gettAlbumsByID)
-	fmt.Print(gethttp("http://thinker:8080/albums/"))
+	router.GET("/:url/:path", gethttp)
 	router.Run(fmt.Sprintf("%v:%v", config.Ips, config.Port))
 
 }
 
-func getAlbums(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, albums)
-}
+func gethttp(c *gin.Context) {
+	url := c.Query("url")
+	path := c.Query("path")
 
-var albums = []album{
-	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
-	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
-}
-
-func gettAlbumsByID(c *gin.Context) {
-	id := c.Param("id")
-
-	for _, a := range albums {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
-	}
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "album not found"})
-}
-
-func gethttp(url string) map[string]any {
-	resp, err := http.Get(url)
+	resp, err := http.Get(fmt.Sprintf("http://%v/%v", url, path))
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	/*body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("failed to read response body: %v", err)
 	}
@@ -83,7 +61,7 @@ func gethttp(url string) map[string]any {
 	err = json.Unmarshal(body, &output)
 	if err != nil {
 		fmt.Print(err)
-	}
+	}*/
 
-	return output
+	c.JSON(http.StatusOK, resp)
 }
