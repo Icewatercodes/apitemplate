@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"io"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,6 +40,18 @@ func main() {
 	router := gin.Default()
 	router.GET("/albums", getAlbums)
 	router.GET("/albums/:id", gettAlbumsByID)
+	resp, err := http.Get("http://thinker:8080/albums/")
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("failed to read response body: %v", err)
+	}
+
+	fmt.Print("here:    ", resp, "\n")
 	router.Run(fmt.Sprintf("%v:%v", config.Ips, config.Port))
 
 }
